@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Debt Payoff Board — PlanPayLove</title>
+<style>
+:root{
+  --accent:#1B4332; --accent-dark:#122E22; --accent-soft:#E3EDE6;
+  --bg:#FBF6EE; --card:#FFFFFF; --ink:#1F2937; --mut:#6B7280; --line:#E7E2D5;
+  --inputbg:#FFF2CC; --inputtext:#1F2937; --track:#EDE7D6; --gold:#C9A227;
+  --shadow:0 1px 3px rgba(27,67,50,.08),0 4px 14px rgba(27,67,50,.06);
+}
+body.dark{
+  --bg:#101613; --card:#1B241F; --ink:#F3F4F6; --mut:#9CA3AF; --line:#2C3A31;
+  --inputbg:#101613; --inputtext:#F3F4F6; --track:#2C3A31; --accent-soft:#223528;
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;color:var(--accent);margin:0 0 8px}
+body.dark h1,body.dark h2,body.dark h3{color:#F3F4F6}
+.layout{display:flex;min-height:100vh}
+aside{width:262px;background:linear-gradient(180deg,var(--accent),var(--accent-dark));color:#fff;padding:24px 18px;flex-shrink:0}
+.brand{font-family:Georgia,serif;font-size:27px;line-height:1.1;margin-bottom:4px}
+.brand small{display:block;font-family:system-ui,sans-serif;font-size:11px;letter-spacing:2px;color:#E8DFAE;margin-top:6px}
+nav{margin-top:26px;display:flex;flex-direction:column;gap:6px}
+nav button{background:transparent;border:1px solid rgba(255,255,255,.25);color:#fff;padding:11px 12px;border-radius:10px;text-align:left;font-size:15px;font-weight:700;cursor:pointer}
+nav button.active{background:var(--gold);color:#1F2937;border-color:var(--gold)}
+nav button:hover{border-color:rgba(255,255,255,.6)}
+.side-summary{margin-top:24px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:14px}
+.side-summary .k{font-size:11px;letter-spacing:1.5px;font-weight:800;color:#E8DFAE}
+.side-summary .v{font-size:21px;font-weight:800;margin:2px 0 10px}
+.side-summary .v:last-child{margin-bottom:0}
+.side-label{font-size:11px;letter-spacing:2px;font-weight:800;color:rgba(255,255,255,.75);margin:22px 0 8px}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.swatches button{width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.6);cursor:pointer;padding:0}
+.swatches button.active{border-color:#fff;box-shadow:0 0 0 2px var(--gold)}
+.mode-row{display:flex;gap:6px}
+.mode-row button{flex:1;background:transparent;border:1px solid rgba(255,255,255,.25);color:#fff;padding:9px 6px;border-radius:10px;font-weight:800;cursor:pointer;font-size:13px}
+.mode-row button.active{background:var(--gold);color:#1F2937;border-color:var(--gold)}
+main{flex:1;padding:28px 30px;max-width:1020px}
+section{display:none}
+section.active{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow)}
+.hero{background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;border-radius:18px;padding:28px 30px;margin-bottom:16px;box-shadow:var(--shadow)}
+.hero .lbl{font-size:13px;letter-spacing:2px;color:#E8DFAE;font-weight:800}
+.hero .num{font-family:Georgia,serif;font-size:58px;line-height:1.05;margin:6px 0}
+.hero .sub{opacity:.92;font-size:15px}
+.hero .chip{display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:5px 12px;font-size:13px;font-weight:700;margin-top:12px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+.stat .k{font-size:12px;letter-spacing:1px;color:var(--mut);font-weight:800}
+.stat .v{font-size:23px;font-weight:800;color:var(--accent)}
+body.dark .stat .v{color:#F3F4F6}
+.stat .v.gold{color:#8A6D1B}
+body.dark .stat .v.gold{color:#E8DFAE}
+label{display:block;font-size:13px;font-weight:800;color:var(--mut);margin:12px 0 4px}
+input,select{width:100%;padding:11px 12px;border:1.5px solid #D9C98A;border-radius:10px;background:var(--inputbg);color:var(--inputtext);font-size:16px}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+table{width:100%;border-collapse:collapse;margin-top:8px}
+th{background:var(--accent);color:#fff;padding:10px 8px;text-align:left;font-size:14px}
+th:first-child{border-radius:8px 0 0 8px}
+th:last-child{border-radius:0 8px 8px 0}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
+td input{padding:8px 9px}
+.btn{background:var(--accent);color:#fff;border:0;padding:11px 18px;border-radius:10px;font-weight:800;cursor:pointer;font-size:15px}
+.btn:hover{filter:brightness(1.12)}
+.btn.gold{background:var(--gold);color:#1F2937}
+.btn.ghost{background:var(--card);color:var(--accent);border:1.5px solid var(--accent)}
+body.dark .btn.ghost{color:#F3F4F6}
+.btn.small{padding:7px 12px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chips button{background:var(--accent-soft);border:1.5px solid var(--accent);color:var(--accent);border-radius:20px;padding:7px 14px;font-weight:800;cursor:pointer;font-size:13px}
+body.dark .chips button{color:#F3F4F6}
+.chips button:hover{background:var(--accent);color:#fff}
+.bar{height:14px;background:var(--track);border-radius:8px;overflow:hidden}
+.bar>div{height:100%;background:var(--accent)}
+.bar>div.goldbar{background:var(--gold)}
+.muted{color:var(--mut);font-size:14px}
+.warn{background:#FFF7E0;border:1px solid #E8D488;border-radius:10px;padding:12px 14px;font-size:14px;color:#1F2937}
+body.dark .warn{background:#3A2E12;border-color:#8A6D1B;color:#F3F4F6}
+.demobadge{display:inline-block;background:var(--gold);color:#1F2937;font-weight:800;font-size:12px;letter-spacing:1px;padding:4px 10px;border-radius:20px;margin-bottom:10px}
+.celebrate{background:linear-gradient(135deg,#FFF7E0,#FBEEC2);border:1.5px solid var(--gold);border-radius:14px;padding:16px 18px;margin-bottom:16px;color:#1F2937}
+body.dark .celebrate{background:#3A2E12;border-color:#8A6D1B;color:#F3F4F6}
+.celebrate b{font-size:17px}
+.celebrate button{float:right;background:transparent;border:0;font-size:18px;cursor:pointer;color:inherit}
+.method-row{display:flex;gap:8px;margin:12px 0}
+.method-row button{flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--accent);background:var(--card);color:var(--accent);font-weight:800;cursor:pointer;font-size:15px}
+.method-row button.active{background:var(--accent);color:#fff}
+body.dark .method-row button{color:#F3F4F6}
+.miles{display:flex;gap:10px;flex-wrap:wrap}
+.mile{background:var(--accent-soft);border-radius:12px;padding:12px 14px;min-width:170px}
+.mile b{display:block;font-size:16px}
+.mile span{font-size:13px;color:var(--mut)}
+.chartwrap{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:16px;box-shadow:var(--shadow)}
+.killed{background:var(--accent-soft);border-radius:12px;padding:12px 14px;margin:8px 0}
+.donut-flex{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.donut-legend{flex:1;min-width:220px}
+.donut-legend .row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+.donut-legend .row:last-child{border-bottom:0}
+.dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:8px;vertical-align:-1px}
+.order-step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+.order-step:last-child{border-bottom:0}
+.order-num{flex-shrink:0;width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px}
+.order-step.target .order-num{background:var(--gold);color:#1F2937}
+.order-body{flex:1}
+.order-body .pay{font-weight:800;color:var(--accent);font-size:15px}
+body.dark .order-body .pay{color:#E8DFAE}
+#print-summary{display:none}
+/* DEMO build only — hidden in the full app */
+#demoBand{display:none;background:var(--gold);color:#1F2937;font-weight:800;text-align:center;padding:8px 10px;font-size:13px;letter-spacing:1px}
+#demoMark{display:none;position:fixed;right:-38px;top:44%;transform:rotate(45deg);background:rgba(201,162,39,.85);color:#1F2937;font-weight:800;letter-spacing:3px;padding:6px 60px;font-size:13px;z-index:50;pointer-events:none}
+body.demo-build #demoBand{display:block}
+body.demo-build #demoMark{display:block}
+@media(max-width:700px){.layout{flex-direction:column}aside{width:100%}.grid{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.hero .num{font-size:42px}main{padding:18px}}
+@media print{
+  aside,nav,.btnrow,.no-print,#demoBand,#demoMark{display:none!important}
+  main{max-width:none;padding:0}
+  #print-summary{display:block}
+  section{display:none!important}
+}
+</style>
+</head>
+<body>
+<div id="demoBand">DEMO — PLANPAYLOVE &middot; EXAMPLE NUMBERS ONLY &middot; FULL APP HAS NO LIMITS</div>
+<div id="demoMark">DEMO</div>
+<div class="layout">
+<aside>
+  <div class="brand">PlanPayLove<small>PLAN IT. PAY IT. LOVE YOUR MONEY.</small></div>
+  <nav>
+    <button data-nav="debts" class="active">Debts</button>
+    <button data-nav="board">Board</button>
+    <button data-nav="whatif">What-If Simulator</button>
+    <button data-nav="plan">Plan</button>
+    <button data-nav="progress">Progress</button>
+    <button data-nav="backup">Backup</button>
+  </nav>
+  <div class="side-summary">
+    <div class="k">TOTAL DEBT</div>
+    <div class="v" id="sideTotal">$0</div>
+    <div class="k">DEBT-FREE DATE</div>
+    <div class="v" id="sideDate">—</div>
+  </div>
+  <div class="side-label">THEME COLOUR</div>
+  <div class="swatches" id="swatches"></div>
+  <p class="muted" style="color:rgba(255,255,255,.8);font-size:13px;margin:6px 0 0" id="themeName"></p>
+  <div class="side-label">MODE</div>
+  <div class="mode-row">
+    <button id="modeLight">Light</button>
+    <button id="modeDark">Dark</button>
+  </div>
+  <p class="muted" style="color:rgba(255,255,255,.75);font-size:13px;margin-top:22px">Works fully offline in your browser. No account, no login, no bank connection — your numbers never leave this device.</p>
+</aside>
+<main>
+  <!-- DEBTS -->
+  <section id="debts" class="active">
+    <h1>Debt Payoff Board</h1>
+    <p class="muted">One board for every debt. Add what you owe, pick Snowball or Avalanche, and watch the debt-free date move.</p>
+    <div id="demoBadge"></div>
+    <div id="celebrateBox"></div>
+    <div class="card">
+      <h2>Your debts</h2>
+      <table>
+        <thead><tr><th>Debt</th><th>Balance</th><th>Interest (APR %)</th><th>Minimum / month</th><th>Due day</th><th>Note</th><th></th></tr></thead>
+        <tbody id="debtRows"></tbody>
+      </table>
+      <div class="btnrow"><button class="btn" id="addDebt">+ Add a debt</button></div>
+      <p class="muted" id="addNote" style="margin:8px 0 0"></p>
+      <label>Extra payment per month (on top of minimums)</label>
+      <input type="number" id="extra" min="0" step="any">
+      <label>Start month (first payment month)</label>
+      <input type="month" id="startMonth">
+      <label>Currency symbol (any currency works)</label>
+      <input type="text" id="currency" maxlength="3">
+      <div class="btnrow">
+        <button class="btn gold" id="clearDemo">Clear &amp; start mine</button>
+        <button class="btn ghost" id="loadDemo">Reload demo data</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Debts you've killed <span class="muted" id="killedTotal" style="font-size:14px"></span></h2>
+      <p class="muted">Paid a debt off? Mark it here and it moves out of your plan into your win list — it no longer counts toward your total debt.</p>
+      <div id="killedList"></div>
+    </div>
+  </section>
+
+  <!-- BOARD -->
+  <section id="board">
+    <div class="hero">
+      <div class="lbl">DEBT-FREE DATE</div>
+      <div class="num" id="heroDate">—</div>
+      <div class="sub" id="heroSub"></div>
+      <div id="heroChip"></div>
+    </div>
+    <div class="method-row">
+      <button id="methodSnow">Snowball — smallest balance first</button>
+      <button id="methodAval">Avalanche — highest interest first</button>
+    </div>
+    <div class="grid">
+      <div class="stat"><div class="k">TOTAL DEBT</div><div class="v" id="statTotal">$0</div></div>
+      <div class="stat"><div class="k">MONTHLY POOL</div><div class="v" id="statPool">$0</div></div>
+      <div class="stat"><div class="k">MONTHS TO DEBT-FREE</div><div class="v" id="statMonths">0</div></div>
+      <div class="stat"><div class="k">TOTAL INTEREST</div><div class="v" id="statInterest">$0</div></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2>Where your debt sits</h2>
+      <div class="donut-flex">
+        <div id="donutBox"></div>
+        <div class="donut-legend" id="donutLegend"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Payoff order — what to pay this month</h2>
+      <p class="muted" id="orderNote"></p>
+      <div id="orderList"></div>
+      <p class="muted" id="compareNote" style="margin-top:12px"></p>
+    </div>
+  </section>
+
+  <!-- WHAT-IF -->
+  <section id="whatif">
+    <h1>What-if simulator</h1>
+    <p class="muted">Change one thing and see the whole future move — before you commit a single extra dollar. The lump sum goes to your current target debt first, then rolls to the next debt if the target is cleared.</p>
+    <div class="card">
+      <label>Try a different extra payment per month</label>
+      <input type="number" id="simExtra" min="0" step="any">
+      <div class="chips">
+        <button data-chip="25">+ $25 / mo</button>
+        <button data-chip="50">+ $50 / mo</button>
+        <button data-chip="100">+ $100 / mo</button>
+        <button data-chip="150">+ $150 / mo</button>
+      </div>
+      <label>Try a one-time lump-sum payment (applied now)</label>
+      <input type="number" id="simLump" min="0" step="any">
+      <div class="btnrow"><button class="btn ghost" id="simReset">Reset to my current plan</button></div>
+    </div>
+    <div class="grid2">
+      <div class="stat"><div class="k">YOUR CURRENT PLAN</div><div class="v" id="simCurDate">—</div><p class="muted" id="simCurDetail" style="margin:6px 0 0"></p></div>
+      <div class="stat"><div class="k">WITH YOUR WHAT-IF</div><div class="v gold" id="simNewDate">—</div><p class="muted" id="simNewDetail" style="margin:6px 0 0"></p></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2>What you save</h2>
+      <p id="simSaved" style="font-size:18px;font-weight:800"></p>
+      <p class="muted" id="simSavedNote"></p>
+    </div>
+    <div class="card">
+      <h2>Snowball vs Avalanche — at your what-if settings</h2>
+      <p class="muted">Same extra payment, same lump sum — only the attack order changes.</p>
+      <table>
+        <thead><tr><th>Method</th><th>Debt-free date</th><th>Months</th><th>Total interest</th></tr></thead>
+        <tbody>
+          <tr><td>Snowball</td><td id="simRowSnowDate">—</td><td id="simRowSnowMonths">—</td><td id="simRowSnowInterest">—</td></tr>
+          <tr><td>Avalanche</td><td id="simRowAvalDate">—</td><td id="simRowAvalMonths">—</td><td id="simRowAvalInterest">—</td></tr>
+        </tbody>
+      </table>
+      <p class="muted" id="simTableNote" style="margin-top:10px"></p>
+    </div>
+  </section>
+
+  <!-- PLAN -->
+  <section id="plan">
+    <h1>Payoff plan — month by month</h1>
+    <p class="muted">Every month: interest first, then minimums on all debts, then every spare dollar at the target debt. When a debt is gone, its minimum rolls into the attack.</p>
+    <div class="card">
+      <h2>Milestones — when each debt dies</h2>
+      <div class="miles" id="goneList"></div>
+    </div>
+    <div class="card">
+      <table>
+        <thead><tr><th>Month</th><th>Payment</th><th>Interest</th><th>Principal</th><th>Balance left</th></tr></thead>
+        <tbody id="planRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section id="progress">
+    <div class="hero">
+      <div class="lbl">DEBT-FREE COUNTDOWN</div>
+      <div class="num" id="countdownNum">—</div>
+      <div class="sub" id="countdownText"></div>
+    </div>
+    <div class="chartwrap">
+      <h2>Your balance over time</h2>
+      <p class="muted">Projected total balance, month by month, on your current plan. The line hits zero on your debt-free date.</p>
+      <div id="chartBox"></div>
+    </div>
+    <div class="card">
+      <h2>Each debt's road to zero</h2>
+      <p class="muted">How long each debt survives on your current plan — the bar runs from today to the month that debt is gone.</p>
+      <div id="progressDebts"></div>
+    </div>
+    <div class="card">
+      <h2>Milestones</h2>
+      <div class="miles" id="mileList2"></div>
+    </div>
+  </section>
+
+  <!-- BACKUP -->
+  <section id="backup">
+    <h1>Backup</h1>
+    <div class="card">
+      <div class="warn"><strong>Important:</strong> your numbers live in this browser only. If you clear your browser data, they are gone — unless you exported a backup. Export after every big change and keep the file somewhere safe.</div>
+      <div class="btnrow">
+        <button class="btn gold" id="exportBtn">Export backup (JSON)</button>
+        <label class="btn" style="cursor:pointer">Import backup<input type="file" id="importFile" accept=".json,application/json" hidden></label>
+        <button class="btn ghost" id="printBtn">Print summary</button>
+      </div>
+      <p class="muted" style="margin-top:14px" id="backupStatus"></p>
+      <p class="muted" id="demoBackupNote" style="display:none">Backup, import and printing are full-app features — this demo is for trying the app with example numbers.</p>
+    </div>
+    <div class="card">
+      <h2>How the maths works</h2>
+      <p><strong>Snowball</strong> attacks the smallest balance first — quick wins that keep you going. <strong>Avalanche</strong> attacks the highest interest rate first — the cheapest way out in pure maths.</p>
+      <p>Each month, interest is added first (balance × APR ÷ 12), then minimums are paid on every debt, then all remaining money in your monthly pool goes to the target debt. When a debt reaches zero, its minimum joins the attack the next month.</p>
+      <p>The debt-free date is the month the last balance hits zero. The <strong>What-If Simulator</strong> runs the exact same maths with a different extra payment or a one-time lump sum, so the dates and interest it shows are the same numbers your real plan would produce. Change a balance, a rate, or your extra payment and the whole plan re-works itself.</p>
+    </div>
+  </section>
+
+  <div id="print-summary"></div>
+</main>
+</div>
+<script>
+"use strict";
+/* DEMO SWITCH: the GitHub demo build flips this one line to true. */
+var DEMO_BUILD = true;
+var MAX_DEBTS_DEMO = 6;
+var KEY = DEMO_BUILD ? "planpaylove_debtpayoff_v3_demo" : "planpaylove_debtpayoff_v3";
+var THEMES = {
+  green:   {name:"Deep Green", accent:"#1B4332", dark:"#122E22"},
+  plum:    {name:"Plum / Blush", accent:"#7A1F3D", dark:"#571429"},
+  blue:    {name:"Blue", accent:"#1F4E79", dark:"#14365A"},
+  purple:  {name:"Purple", accent:"#5B2C8A", dark:"#3F1E63"},
+  teal:    {name:"Teal", accent:"#0F766E", dark:"#0A5450"},
+  charcoal:{name:"Charcoal", accent:"#374151", dark:"#1F2937"}
+};
+function pad(n){return n<10?"0"+n:n;}
+function money(n){var s=state.currency||"$";var v=Math.round(n*100)/100;return s+v.toLocaleString("en-US",{minimumFractionDigits:0,maximumFractionDigits:2});}
+function money0(n){var s=state.currency||"$";return s+Math.round(n).toLocaleString("en-US");}
+function demoState(){
+  return {method:"snowball",extra:150,startMonth:"2026-11",currency:"$",
+    debts:[{name:"Credit Card",balance:3200,apr:24,min:75,due:"",note:""},
+           {name:"Personal Loan",balance:5400,apr:11,min:140,due:"",note:""},
+           {name:"Car Loan",balance:8900,apr:6.5,min:210,due:"",note:""},
+           {name:"Store Card",balance:650,apr:19,min:30,due:"",note:""}],
+    killed:[],simExtra:150,simLump:0,theme:"green",dark:false,demo:true};
+}
+var state;
+try{state=JSON.parse(localStorage.getItem(KEY))||demoState();}catch(e){state=demoState();}
+if(!state.debts||!THEMES[state.theme])state=demoState();
+if(state.dark===undefined)state.dark=false;
+if(!state.killed)state.killed=[];
+if(state.simExtra===undefined)state.simExtra=state.extra;
+if(state.simLump===undefined)state.simLump=0;
+var lastKill=null;
+var __startScreen=null;
+try{
+  var hash = (location.hash||"").replace(/^#/,"");
+  var hp = {};
+  hash.split("&").forEach(function(p){var kv=p.split("=");if(kv[0])hp[kv[0]]=decodeURIComponent(kv[1]||"");});
+  if(hp.theme && THEMES[hp.theme])state.theme=hp.theme;
+  if(hp.dark==="1")state.dark=true;
+  if(hp.dark==="0")state.dark=false;
+  if(hp.method==="snowball"||hp.method==="avalanche")state.method=hp.method;
+  if(hp.screen && ["debts","board","whatif","plan","progress","backup"].indexOf(hp.screen)>=0)__startScreen=hp.screen;
+  if(hp.simExtra!==undefined&&hp.simExtra!=="")state.simExtra=+hp.simExtra;
+  if(hp.simLump!==undefined&&hp.simLump!=="")state.simLump=+hp.simLump;
+}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+function applyTheme(){
+  var t=THEMES[state.theme]||THEMES.green;
+  var r=document.documentElement.style;
+  r.setProperty("--accent",t.accent);
+  r.setProperty("--accent-dark",t.dark);
+  document.body.classList.toggle("dark",!!state.dark);
+  document.body.classList.toggle("demo-build",DEMO_BUILD);
+  var sw=document.getElementById("swatches");
+  if(sw){
+    var h="";
+    Object.keys(THEMES).forEach(function(k){
+      h+="<button data-theme='"+k+"' title='"+THEMES[k].name+"' style='background:"+THEMES[k].accent+"' class='"+(k===state.theme?"active":"")+"'></button>";
+    });
+    sw.innerHTML=h;
+    sw.querySelectorAll("button").forEach(function(b){
+      b.addEventListener("click",function(){state.theme=b.dataset.theme;save();applyTheme();});
+    });
+  }
+  var tn=document.getElementById("themeName");
+  if(tn)tn.textContent="Theme: "+t.name+(state.dark?" · Dark mode":" · Light mode");
+  var ml=document.getElementById("modeLight"),md=document.getElementById("modeDark");
+  if(ml)ml.classList.toggle("active",!state.dark);
+  if(md)md.classList.toggle("active",!!state.dark);
+}
+function monthLabel(y,m){
+  var names=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return names[m]+" "+y;
+}
+function parseStart(){
+  if(!state.startMonth)return null;
+  var p=state.startMonth.split("-");
+  if(p.length!==2)return null;
+  return {y:+p[0],m:+p[1]-1};
+}
+function sortDebts(list,method){
+  return list.slice().sort(function(a,b){
+    if(method==="snowball"){if(a.balance!==b.balance)return a.balance-b.balance;return b.apr-a.apr;}
+    if(a.apr!==b.apr)return b.apr-a.apr;return a.balance-b.balance;
+  });
+}
+function simulate(method,extraOverride,lump){
+  var debts=(state.debts||[]).map(function(d){
+    return {name:d.name,balance:+d.balance||0,apr:+d.apr||0,min:+d.min||0};
+  }).filter(function(d){return d.balance>0;});
+  var extra=(extraOverride===undefined||extraOverride===null||extraOverride==="")?+state.extra||0:+extraOverride;
+  var lumpLeft=+(lump||0);
+  var lumpKilled=[];
+  if(lumpLeft>0){
+    var ordered=sortDebts(debts,method);
+    ordered.forEach(function(d){
+      if(lumpLeft<=0)return;
+      var take=Math.min(lumpLeft,d.balance);
+      d.balance-=take;lumpLeft-=take;
+      if(d.balance<=0.005)lumpKilled.push(d.name);
+    });
+    debts=debts.filter(function(d){return d.balance>0.005;});
+  }
+  var start=parseStart();
+  var months=[],gone={};
+  var totalInterest=0,totalPaid=0;
+  var pool0=debts.reduce(function(s,d){return s+d.min;},0)+extra;
+  for(var i=0;i<600;i++){
+    if(!debts.length)break;
+    var interest=0;
+    debts.forEach(function(d){var it=d.balance*d.apr/12/100;d.balance+=it;interest+=it;});
+    totalInterest+=interest;
+    var mins=debts.reduce(function(s,d){return s+d.min;},0);
+    var pool=mins+extra;
+    var remaining=pool,payment=0;
+    debts.forEach(function(d){
+      var pay=Math.min(d.min,d.balance,remaining);
+      d.balance-=pay;remaining-=pay;payment+=pay;
+    });
+    var active=debts.filter(function(d){return d.balance>0.005;});
+    if(active.length){
+      var target=sortDebts(active,method)[0];
+      var pay2=Math.min(remaining,target.balance);
+      target.balance-=pay2;payment+=pay2;remaining-=pay2;
+    }
+    debts.forEach(function(d){
+      if(d.balance<=0.005&&gone[d.name]===undefined){gone[d.name]=i;}
+    });
+    debts=debts.filter(function(d){return d.balance>0.005;});
+    totalPaid+=payment;
+    var balLeft=debts.reduce(function(s,d){return s+d.balance;},0);
+    var yy=0,mm=0;
+    if(start){var tot=start.m+i;yy=start.y+Math.floor(tot/12);mm=tot%12;}
+    months.push({i:i,label:start?monthLabel(yy,mm):("Month "+(i+1)),payment:payment,interest:interest,principal:payment-interest,left:balLeft});
+  }
+  var start2=parseStart();
+  var freeLabel="—";
+  if(start2&&months.length){
+    var tot2=start2.m+months.length-1;
+    freeLabel=monthLabel(start2.y+Math.floor(tot2/12),tot2%12);
+  }
+  return {months:months,gone:gone,lumpKilled:lumpKilled,totalInterest:totalInterest,totalPaid:totalPaid,
+          pool:pool0,monthsCount:months.length,freeLabel:freeLabel};
+}
+function orderList(method){
+  var debts=(state.debts||[]).map(function(d){
+    return {name:d.name,balance:+d.balance||0,apr:+d.apr||0,min:+d.min||0};
+  }).filter(function(d){return d.balance>0;});
+  return sortDebts(debts,method);
+}
+function el(id){return document.getElementById(id);}
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function goneLabel(sim,name){
+  if(sim.lumpKilled.indexOf(name)>=0)return "Paid off by your lump sum";
+  var g=sim.gone[name];
+  if(g===undefined)return "";
+  return "Gone by "+sim.months[g].label;
+}
+/* Structure only: debt rows, killed list, badges, top-input values.
+   Called on load and on structural changes (add/delete/kill/restore/clear/demo).
+   Never called while typing, so the cursor never jumps away. */
+function renderStructure(){
+  el("demoBadge").innerHTML=(state.demo||DEMO_BUILD)?'<span class="demobadge">DEMO DATA — filled example. Press "Clear &amp; start mine" to use your own numbers.</span>':"";
+  el("extra").value=state.extra??"";
+  el("startMonth").value=state.startMonth||"";
+  el("currency").value=state.currency||"$";
+  el("simExtra").value=state.simExtra??"";
+  el("simLump").value=state.simLump??"";
+  var dh="";
+  (state.debts||[]).forEach(function(d,i){
+    dh+="<tr><td><input data-debt='"+i+"' data-f='name' value='"+esc(d.name)+"'></td>"
+      +"<td><input type='number' min='0' step='any' data-debt='"+i+"' data-f='balance' value='"+(d.balance??"")+"'></td>"
+      +"<td><input type='number' min='0' step='any' data-debt='"+i+"' data-f='apr' value='"+(d.apr??"")+"'></td>"
+      +"<td><input type='number' min='0' step='any' data-debt='"+i+"' data-f='min' value='"+(d.min??"")+"'></td>"
+      +"<td><input type='number' min='1' max='31' step='1' data-debt='"+i+"' data-f='due' value='"+esc(d.due??"")+"' placeholder='e.g. 15'></td>"
+      +"<td><input data-debt='"+i+"' data-f='note' value='"+esc(d.note??"")+"' placeholder='optional'></td>"
+      +"<td style='white-space:nowrap'><button class='btn small gold' data-kill='"+i+"'>✓ Paid off</button> <button class='btn ghost small' data-del='"+i+"'>✕</button></td></tr>";
+  });
+  el("debtRows").innerHTML=dh;
+  var kh="";
+  (state.killed||[]).forEach(function(k,i){
+    kh+="<div class='killed'><strong>"+esc(k.name)+"</strong> — "+money0(k.balance)+" paid off "+esc(k.date||"")
+      +(k.note?" — "+esc(k.note):"")
+      +" <button class='btn ghost small' data-restore='"+i+"'>Restore</button></div>";
+  });
+  el("killedList").innerHTML=kh||"<p class='muted'>Nothing here yet — your first paid-off debt will feel very good in this spot.</p>";
+  var killedTotal=(state.killed||[]).reduce(function(s,k){return s+(+k.balance||0);},0);
+  el("killedTotal").textContent=killedTotal>0?("· "+money0(killedTotal)+" killed so far"):"";
+  el("celebrateBox").innerHTML=lastKill
+    ? "<div class='celebrate'><button data-dismiss-celebrate='1' aria-label='Dismiss'>✕</button><b>🎉 "+esc(lastKill.name)+" is gone!</b><br>"+money0(lastKill.balance)+" paid off — that minimum now joins the attack on your next debt.</div>"
+    : "";
+  var atCap=DEMO_BUILD&&(state.debts||[]).length>=MAX_DEBTS_DEMO;
+  el("addDebt").disabled=atCap;
+  el("addNote").textContent=atCap?("Demo limit: up to "+MAX_DEBTS_DEMO+" debts in the demo. The full app has no limit."):"";
+  if(DEMO_BUILD){
+    el("exportBtn").disabled=true;
+    el("importFile").disabled=true;
+    el("printBtn").disabled=true;
+    el("demoBackupNote").style.display="block";
+  }
+}
+/* Computed outputs only: stats, order, donut, simulator, plan, progress, chart.
+   Safe to run on every keystroke — it never rebuilds an input you are typing in. */
+function renderComputed(){
+  var sim=simulate(state.method);
+  var simOther=simulate(state.method==="snowball"?"avalanche":"snowball");
+  var totalDebt=(state.debts||[]).reduce(function(s,d){return s+(+d.balance||0);},0);
+  // sidebar summary
+  el("sideTotal").textContent=money0(totalDebt);
+  el("sideDate").textContent=sim.freeLabel;
+  // board hero
+  el("heroDate").textContent=sim.freeLabel;
+  el("heroSub").textContent=sim.monthsCount
+    ? (state.method==="snowball"?"Snowball plan — smallest balance first. ":"Avalanche plan — highest interest first. ")
+      + sim.monthsCount+" monthly payments of up to "+money(sim.pool)+" until you are debt-free."
+    : "Add a debt to see your debt-free date.";
+  var killedTotal=(state.killed||[]).reduce(function(s,k){return s+(+k.balance||0);},0);
+  el("heroChip").innerHTML=killedTotal>0?('<span class="chip">🎉 '+money0(killedTotal)+' already killed</span>'):"";
+  el("methodSnow").classList.toggle("active",state.method==="snowball");
+  el("methodAval").classList.toggle("active",state.method==="avalanche");
+  el("statTotal").textContent=money0(totalDebt);
+  el("statPool").textContent=money0(sim.pool);
+  el("statMonths").textContent=sim.monthsCount;
+  el("statInterest").textContent=money0(sim.totalInterest);
+  var ord=orderList(state.method);
+  el("orderNote").textContent=ord.length
+    ? ("Attack order ("+(state.method==="snowball"?"Snowball":"Avalanche")+"): "+ord.map(function(d,i){return (i+1)+". "+d.name;}).join(" → "))
+    : "No debts yet — add one on the Debts screen.";
+  // donut of debt mix
+  (function(){
+    var box=el("donutBox"),leg=el("donutLegend");
+    if(!ord.length||!totalDebt){box.innerHTML="<p class='muted'>Your donut appears once you add a debt.</p>";leg.innerHTML="";return;}
+    var accent=getComputedStyle(document.documentElement).getPropertyValue("--accent").trim()||"#1B4332";
+    var cols=[accent,"#C9A227",accent+"A6",accent+"59","#8A6D1B"];
+    var R=70,C=2*Math.PI*R,off=0,segs="",lh="";
+    ord.forEach(function(d,i){
+      var frac=d.balance/totalDebt;
+      var len=frac*C;
+      segs+="<circle cx='100' cy='100' r='"+R+"' fill='none' stroke='"+cols[i%cols.length]+"' stroke-width='34' stroke-dasharray='"+len.toFixed(1)+" "+(C-len).toFixed(1)+"' stroke-dashoffset='"+(-off).toFixed(1)+"'/>";
+      off+=len;
+      var share=Math.round(frac*100);
+      lh+="<div class='row'><span><span class='dot' style='background:"+cols[i%cols.length]+"'></span>"+esc(d.name)+"</span><span><strong>"+money0(d.balance)+"</strong> · "+share+"%</span></div>";
+    });
+    box.innerHTML="<svg width='200' height='200' viewBox='0 0 200 200' role='img' aria-label='Debt mix donut'>"
+      +"<circle cx='100' cy='100' r='"+R+"' fill='none' stroke='var(--track)' stroke-width='34'/>"
+      +"<g transform='rotate(-90 100 100)'>"+segs+"</g>"
+      +"<text x='100' y='96' text-anchor='middle' font-size='13' fill='#6B7280'>TOTAL DEBT</text>"
+      +"<text x='100' y='118' text-anchor='middle' font-size='19' font-weight='800' fill='currentColor'>"+money0(totalDebt)+"</text></svg>";
+    leg.innerHTML=lh;
+  })();
+  // payoff order with pay-this-month
+  var oh="";
+  var minsSum=ord.reduce(function(s,d){return s+d.min;},0);
+  var extra=+(state.extra||0);
+  ord.forEach(function(d,i){
+    var share=totalDebt>0?Math.round(d.balance/totalDebt*100):0;
+    var gl=goneLabel(sim,d.name);
+    var payThisMonth=d.min+(i===0?extra:0);
+    oh+="<div class='order-step"+(i===0?" target":"")+"'><div class='order-num'>"+(i+1)+"</div><div class='order-body'>"
+      +"<strong>"+esc(d.name)+"</strong> — "+money0(d.balance)+" at "+d.apr+"% APR, min "+money0(d.min)+"/mo"
+      +(gl?" · <span class='muted'>"+gl+"</span>":"")
+      +"<br><span class='pay'>Pay this month: "+money0(payThisMonth)+(i===0&&extra>0?" (minimum + "+money0(extra)+" extra — this is the target)":"")+"</span>"
+      +"<div class='bar' style='margin-top:8px'><div style='width:"+share+"%'></div></div>"
+      +"<p class='muted' style='margin:4px 0 0'>"+share+"% of your total debt</p>"
+      +"</div></div>";
+  });
+  el("orderList").innerHTML=oh;
+  var otherName=state.method==="snowball"?"Avalanche":"Snowball";
+  var diffInt=Math.round(simOther.totalInterest-sim.totalInterest);
+  var diffMo=simOther.monthsCount-sim.monthsCount;
+  var cmsg="";
+  if(sim.monthsCount){
+    cmsg="<strong>"+otherName+" comparison:</strong> "+simOther.monthsCount+" months, "+money0(simOther.totalInterest)+" interest. ";
+    if(diffInt>0)cmsg+="Your current plan saves "+money0(diffInt)+" in interest vs "+otherName+".";
+    else if(diffInt<0)cmsg+="Switching to "+otherName+" would save "+money0(-diffInt)+" in interest.";
+    else cmsg+="Both methods cost the same interest on these debts.";
+    if(diffMo>0)cmsg+=" "+otherName+" takes "+diffMo+" month"+(diffMo===1?"":"s")+" longer.";
+    else if(diffMo<0)cmsg+=" "+otherName+" finishes "+(-diffMo)+" month"+(-diffMo===1?"":"s")+" sooner.";
+  }
+  el("compareNote").innerHTML=cmsg;
+  // what-if
+  var simS=simulate("snowball",state.simExtra,state.simLump);
+  var simA=simulate("avalanche",state.simExtra,state.simLump);
+  var simCur=sim;
+  var simNew=state.method==="snowball"?simS:simA;
+  el("simCurDate").textContent=simCur.freeLabel;
+  el("simCurDetail").textContent=simCur.monthsCount?simCur.monthsCount+" months · "+money0(simCur.totalInterest)+" interest · pool "+money0(simCur.pool)+"/mo":"Add a debt first.";
+  el("simNewDate").textContent=simNew.freeLabel;
+  el("simNewDetail").textContent=simNew.monthsCount?simNew.monthsCount+" months · "+money0(simNew.totalInterest)+" interest · pool "+money0(simNew.pool)+"/mo":"Add a debt first.";
+  var sInt=Math.round(simCur.totalInterest)-Math.round(simNew.totalInterest);
+  var sMo=simCur.monthsCount-simNew.monthsCount;
+  if(simCur.monthsCount&&simNew.monthsCount){
+    el("simSaved").textContent=(sInt>=0?"You save "+money0(sInt)+" in interest":"This costs "+money0(-sInt)+" more in interest")+" and finish "+(sMo>=0?sMo+" month"+(sMo===1?"":"s")+" sooner":(-sMo)+" month"+(-sMo===1?"":"s")+" later")+".";
+    el("simSavedNote").textContent="What-if settings: extra "+money0(+state.simExtra||0)+"/mo, lump sum "+money0(+state.simLump||0)+" now, "+(state.method==="snowball"?"Snowball":"Avalanche")+" order.";
+  } else { el("simSaved").textContent="Add a debt to run the simulator."; el("simSavedNote").textContent=""; }
+  el("simRowSnowDate").textContent=simS.freeLabel;
+  el("simRowSnowMonths").textContent=simS.monthsCount;
+  el("simRowSnowInterest").textContent=money0(simS.totalInterest);
+  el("simRowAvalDate").textContent=simA.freeLabel;
+  el("simRowAvalMonths").textContent=simA.monthsCount;
+  el("simRowAvalInterest").textContent=money0(simA.totalInterest);
+  if(simS.monthsCount&&simA.monthsCount){
+    var dInt=Math.round(simS.totalInterest)-Math.round(simA.totalInterest);
+    el("simTableNote").textContent=dInt>0?("Avalanche saves "+money0(dInt)+" in interest vs Snowball at these settings.")
+      :dInt<0?("Snowball saves "+money0(-dInt)+" in interest vs Avalanche at these settings.")
+      :"Both methods cost the same interest at these settings.";
+  } else el("simTableNote").textContent="";
+  // plan
+  var gh="";
+  Object.keys(sim.gone).forEach(function(name){
+    gh+="<div class='mile'><b>"+esc(name)+"</b><span>Gone by "+sim.months[sim.gone[name]].label+"</span></div>";
+  });
+  sim.lumpKilled.forEach(function(name){
+    gh+="<div class='mile'><b>"+esc(name)+"</b><span>Paid off by your lump sum</span></div>";
+  });
+  el("goneList").innerHTML=gh||"<p class='muted'>No payoff dates yet — add a debt first.</p>";
+  var ph="";
+  sim.months.forEach(function(m){
+    ph+="<tr><td>"+m.label+"</td><td>"+money(m.payment)+"</td><td>"+money(m.interest)+"</td><td>"+money(m.principal)+"</td><td>"+money(m.left)+"</td></tr>";
+  });
+  el("planRows").innerHTML=ph;
+  // progress
+  el("countdownNum").textContent=sim.monthsCount?sim.monthsCount+" payments left":"—";
+  el("countdownText").textContent=sim.monthsCount?("Debt-free in "+sim.freeLabel+" on your current "+(state.method==="snowball"?"Snowball":"Avalanche")+" plan — "+money0(totalDebt)+" to go."):"Add a debt to start your countdown.";
+  (function(){
+    var box=el("chartBox");
+    if(!sim.monthsCount||!totalDebt){box.innerHTML="<p class='muted'>Your chart appears once you add a debt.</p>";return;}
+    var W=900,H=260,PL=56,PR=14,PT=18,PB=26;
+    var pts=[];
+    sim.months.forEach(function(m,i){
+      var x=PL+(W-PL-PR)*(sim.monthsCount===1?1:i/(sim.monthsCount-1));
+      var y=PT+(H-PT-PB)*(1-m.left/totalDebt);
+      pts.push([x,y]);
+    });
+    var line=pts.map(function(p){return Math.round(p[0])+","+Math.round(p[1]);}).join(" ");
+    var area=line+" "+Math.round(W-PR)+","+Math.round(H-PB)+" "+PL+","+Math.round(H-PB);
+    var grid="",ticks="";
+    for(var g=0;g<=4;g++){
+      var gy=PT+(H-PT-PB)*g/4;
+      var gv=Math.round(totalDebt*(1-g/4));
+      grid+="<line x1='"+PL+"' y1='"+Math.round(gy)+"' x2='"+(W-PR)+"' y2='"+Math.round(gy)+"' stroke='#E5E7EB' stroke-width='1'/>";
+      grid+="<text x='"+(PL-8)+"' y='"+(Math.round(gy)+4)+"' font-size='12' fill='#6B7280' text-anchor='end'>"+money0(gv)+"</text>";
+    }
+    sim.months.forEach(function(m,i){
+      if(i%(Math.max(1,Math.floor(sim.monthsCount/6)))===0||i===sim.monthsCount-1){
+        var x=PL+(W-PL-PR)*(sim.monthsCount===1?1:i/(sim.monthsCount-1));
+        var anch=(i===0)?"start":(i===sim.monthsCount-1?"end":"middle");
+        ticks+="<text x='"+Math.round(x)+"' y='"+(H-8)+"' font-size='12' fill='#6B7280' text-anchor='"+anch+"'>"+m.label+"</text>";
+      }
+    });
+    var lastPt=pts[pts.length-1];
+    var accent=getComputedStyle(document.documentElement).getPropertyValue("--accent").trim()||"#1B4332";
+    box.innerHTML="<svg id='progressChart' viewBox='0 0 "+W+" "+H+"' width='100%' role='img' aria-label='Balance over time chart'>"
+      +grid
+      +"<polygon points='"+area+"' fill='"+accent+"' opacity='0.15'/>"
+      +"<polyline points='"+line+"' fill='none' stroke='"+accent+"' stroke-width='3' stroke-linejoin='round'/>"
+      +"<circle cx='"+Math.round(lastPt[0])+"' cy='"+Math.round(lastPt[1])+"' r='6' fill='#C9A227' stroke='#fff' stroke-width='2'/>"
+      +"<text x='"+Math.round(Math.min(lastPt[0]-10,W-150))+"' y='"+Math.round(Math.max(lastPt[1]-12,PT+10))+"' font-size='13' font-weight='700' fill='"+accent+"'>Debt-free: "+sim.freeLabel+"</text>"
+      +ticks+"</svg>";
+  })();
+  var pd="";
+  ord.forEach(function(d){
+    var g=sim.gone[d.name];
+    var gl=goneLabel(sim,d.name);
+    var pct=sim.monthsCount&&g!==undefined?Math.round((g+1)/sim.monthsCount*100):(sim.lumpKilled.indexOf(d.name)>=0?0:100);
+    pd+="<p style='margin:10px 0 4px'><strong>"+esc(d.name)+"</strong> — "+money0(d.balance)+" "+(gl?"· <span class='muted'>"+gl+"</span>":"")+"</p>"
+      +"<div class='bar'><div class='goldbar' style='width:"+pct+"%'></div></div>"
+      +"<p class='muted' style='margin:2px 0 10px'>"+(g!==undefined?("Gone after "+(g+1)+" of "+sim.monthsCount+" payments"):(sim.lumpKilled.indexOf(d.name)>=0?"Cleared by your lump sum":"Still standing at the end of the plan"))+"</p>";
+  });
+  el("progressDebts").innerHTML=pd||"<p class='muted'>Add a debt to see its road to zero.</p>";
+  el("mileList2").innerHTML=gh||"<p class='muted'>No milestones yet — add a debt first.</p>";
+  el("print-summary").innerHTML="<h1>Debt Payoff Board — Summary</h1>"
+    +"<p><strong>Debt-free date: "+sim.freeLabel+"</strong> &nbsp; Method: "+(state.method==="snowball"?"Snowball":"Avalanche")+"</p>"
+    +"<p>Total debt: "+money0(totalDebt)+" &nbsp; Monthly pool: "+money0(sim.pool)+" &nbsp; Months: "+sim.monthsCount+" &nbsp; Total interest: "+money0(sim.totalInterest)+"</p>"
+    +"<p>Plan it. Pay it. Love your money.</p>";
+  applyTheme();
+  save();
+}
+function renderAll(){renderStructure();renderComputed();}
+document.querySelectorAll("nav button").forEach(function(b){
+  b.addEventListener("click",function(){
+    document.querySelectorAll("nav button").forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    document.querySelectorAll("main section").forEach(function(s){s.classList.remove("active");});
+    el(b.dataset.nav).classList.add("active");
+  });
+});
+/* Top-level inputs: state + computed only — the input you are typing in is never rebuilt. */
+el("extra").addEventListener("input",function(){state.extra=el("extra").value===""?"":+el("extra").value;renderComputed();});
+el("startMonth").addEventListener("input",function(){state.startMonth=el("startMonth").value;renderComputed();});
+el("currency").addEventListener("input",function(){state.currency=el("currency").value||"$";renderComputed();});
+el("simExtra").addEventListener("input",function(){state.simExtra=el("simExtra").value===""?"":+el("simExtra").value;renderComputed();});
+el("simLump").addEventListener("input",function(){state.simLump=el("simLump").value===""?"":+el("simLump").value;renderComputed();});
+el("simReset").addEventListener("click",function(){state.simExtra=state.extra;state.simLump=0;el("simExtra").value=state.simExtra??"";el("simLump").value=0;renderComputed();});
+document.querySelectorAll(".chips button").forEach(function(b){
+  b.addEventListener("click",function(){
+    state.simExtra=(+state.extra||0)+(+b.dataset.chip||0);
+    el("simExtra").value=state.simExtra;
+    renderComputed();
+  });
+});
+el("methodSnow").addEventListener("click",function(){state.method="snowball";renderComputed();});
+el("methodAval").addEventListener("click",function(){state.method="avalanche";renderComputed();});
+el("modeLight").addEventListener("click",function(){state.dark=false;save();applyTheme();});
+el("modeDark").addEventListener("click",function(){state.dark=true;save();applyTheme();});
+/* Debt-table inputs: state + computed only — rows are rebuilt only on structural change. */
+document.addEventListener("input",function(e){
+  var t=e.target;
+  if(t.dataset.debt!==undefined){
+    var d=state.debts[+t.dataset.debt];if(!d)return;
+    var f=t.dataset.f;
+    if(f==="name"||f==="due"||f==="note")d[f]=t.value;
+    else d[f]=t.value===""?"":+t.value;
+    renderComputed();
+  }
+});
+document.addEventListener("click",function(e){
+  var t=e.target;
+  if(t.dataset.del!==undefined){state.debts.splice(+t.dataset.del,1);renderAll();}
+  if(t.dataset.kill!==undefined){
+    var d=state.debts[+t.dataset.kill];if(!d)return;
+    var now=new Date();
+    state.killed.push({name:d.name,balance:+d.balance||0,date:now.getFullYear()+"-"+pad(now.getMonth()+1)+"-"+pad(now.getDate()),note:d.note||""});
+    lastKill={name:d.name,balance:+d.balance||0};
+    state.debts.splice(+t.dataset.kill,1);renderAll();
+  }
+  if(t.dataset.restore!==undefined){
+    var k=state.killed[+t.dataset.restore];if(!k)return;
+    state.debts.push({name:k.name,balance:k.balance,apr:"",min:"",due:"",note:k.note||""});
+    state.killed.splice(+t.dataset.restore,1);renderAll();
+  }
+  if(t.dataset.dismissCelebrate!==undefined){lastKill=null;renderStructure();}
+});
+el("addDebt").addEventListener("click",function(){
+  if(DEMO_BUILD&&(state.debts||[]).length>=MAX_DEBTS_DEMO)return;
+  state.debts.push({name:"",balance:"",apr:"",min:"",due:"",note:""});renderAll();
+});
+el("clearDemo").addEventListener("click",function(){
+  var now=new Date();
+  var sm=now.getFullYear()+"-"+pad(now.getMonth()+1);
+  state={method:"snowball",extra:"",startMonth:sm,currency:state.currency||"$",debts:[],killed:[],simExtra:"",simLump:0,theme:state.theme,dark:state.dark,demo:false};
+  lastKill=null;
+  renderAll();
+});
+el("loadDemo").addEventListener("click",function(){var th=state.theme,dk=state.dark;state=demoState();state.theme=th;state.dark=dk;lastKill=null;renderAll();});
+el("exportBtn").addEventListener("click",function(){
+  if(DEMO_BUILD)return;
+  var blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="debt-payoff-backup.json";a.click();
+  el("backupStatus").textContent="Backup downloaded. Keep it somewhere safe.";
+});
+el("importFile").addEventListener("change",function(e){
+  if(DEMO_BUILD)return;
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){try{var d=JSON.parse(r.result);if(!d||typeof d!=="object"||!d.debts)throw 0;state=d;if(!THEMES[state.theme])state.theme="green";if(state.dark===undefined)state.dark=false;if(state.demo===undefined)state.demo=false;if(!state.killed)state.killed=[];if(state.simExtra===undefined)state.simExtra=state.extra;if(state.simLump===undefined)state.simLump=0;renderAll();el("backupStatus").textContent="Backup imported.";}catch(err){el("backupStatus").textContent="That file could not be imported — please choose a Debt Payoff Board backup JSON.";}};
+  r.readAsText(f);
+});
+el("printBtn").addEventListener("click",function(){if(!DEMO_BUILD)window.print();});
+renderAll();
+if(__startScreen){var nb=document.querySelector('nav button[data-nav="'+__startScreen+'"]');if(nb)nb.click();}
+</script>
+</body>
+</html>
